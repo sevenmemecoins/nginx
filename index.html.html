@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CryptoScout – Memecoins, Lançamentos e Alertas em Tempo Real</title>
+  <meta name="description" content="CryptoScout: dashboard em tempo real para memecoins, lançamentos, scores de tendência, segurança, lançamentos e alertas inteligentes." />
+  <meta property="og:title" content="CryptoScout – Memecoins em Tempo Real" />
+  <meta property="og:description" content="Monitor de memecoins com scores de tendência, segurança, lançamentos, notícias e alertas automáticos." />
+  <meta property="og:type" content="website" />
+  <meta property="twitter:card" content="summary_large_image" />
+  <style>
+    :root {
+      --bg: #050608;
+      --bg-alt: #0c0f13;
+      --card: #11151c;
+      --border: #1c232f;
+      --accent: #4be278;
+      --accent-soft: #1a3b27;
+      --danger: #ff5c5c;
+      --warn: #ffd166;
+      --info: #58a6ff;
+      --text: #e6e6e6;
+      --muted: #8b949e;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Layout principal com sidebar */
+    .sidebar {
+      width: 260px;
+      background: rgba(3, 7, 18, 0.96);
+      border-right: 1px solid #111827;
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0, #bbf7d0 0, #22c55e 35%, #065f46 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: #020617;
+      box-shadow: 0 0 25px rgba(34, 197, 94, 0.5);
+    }
+    .logo-text-title {
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .logo-text-sub {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .nav-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav button {
+      all: unset;
+      padding: 9px 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .nav button span.icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      background: rgba(15, 23, 42, 0.9);
+    }
+    .nav button.active {
+      background: linear-gradient(90deg, rgba(34, 197, 94, 0.12), rgba(15, 23, 42, 0.9));
+      color: var(--text);
+      border: 1px solid rgba(74, 222, 128, 0.4);
+    }
+    .nav button:hover {
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Conteúdo principal */
+    .main {
+      flex: 1;
+      padding: 24px 28px 40px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 4px;
+    }
+
+    .main-header-left h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
+    .main-header-left p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2.4fr) minmax(0, 1.6fr);
+      gap: 20px;
+      margin-bottom: 26px;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 45%),
+                  rgba(15, 23, 42, 0.98);
+      border-radius: var(--radius);
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      padding: 16px 16px 14px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.7);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 11px;
+      background: rgba(22, 163, 74, 0.14);
+      color: #bbf7d0;
+      border: 1px solid rgba(34, 197, 94, 0.5);
+    }
+    .badge-live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    thead {
+      background: radial-gradient(circle at left, rgba(56, 189, 248, 0.12), transparent 60%),
+                 rgba(15, 23, 42, 0.9);
+    }
+    th {
+      text-align: left;
+      padding: 9px 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 11px;
+      color: var(--muted);
+      border-bottom: 1px solid rgba(31, 41, 55, 1);
+    }
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.9);
+    }
+    td {
+      padding: 9px 8px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.7);
+    }
+
+    .token-name {
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .token-chain {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .chip-chain {
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(31, 41, 55, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--muted);
+    }
+
+    .score-pill {
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .score-pill span.value {
+      font-weight: 600;
+    }
+    .score-pill.good {
+      background: rgba(34, 197, 94, 0.15);
+      color: #bbf7d0;
+      border: 1px solid rgba(74, 222, 128, 0.65);
+    }
+    .score-pill.mid {
+      background: rgba(234, 179, 8, 0.13);
+      color: #fef9c3;
+      border: 1px solid rgba(250, 204, 21, 0.7);
+    }
+    .score-pill.bad {
+      background: rgba(248, 113, 113, 0.16);
+      color: #fee2e2;
+      border: 1px solid rgba(248, 113, 113, 0.75);
+    }
+
+    .score-bar {
+      width: 70px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 1);
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .change-pos { color: #4be278; font-weight: 600; }
+    .change-neg { color: #f97373; font-weight: 600; }
+
+    .status-launch {
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .status-launch.hot {
+      border-color: rgba(249, 115, 22, 0.8);
+      color: #fed7aa;
+      background: radial-gradient(circle at top, rgba(248, 250, 252, 0.02), transparent 60%),
+                  rgba(30, 64, 175, 0.7);
+    }
+
+    .status-launch.new {
+      border-color: rgba(59, 130, 246, 0.8);
+      color: #bfdbfe;
+      background: rgba(30, 64, 175, 0.5);
+    }
+
+    .tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border-radius: 999px;
+      padding: 3px 7px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(51, 65, 85, 0.9);
+      color: var(--muted);
+    }
+
+    .news-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .news-item {
+      padding: 10px 11px;
+      border-radius: 10px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      background: rgba(15, 23, 42, 0.95);
+      cursor: default;
+    }
+    .news-item-title {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .news-item-meta {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .alert-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .alert-item {
+      font-size: 12px;
+      padding: 8px 9px;
+      border-radius: 10px;
+      border: 1px solid rgba(127, 29, 29, 0.7);
+      background: radial-gradient(circle at left, rgba(248, 113, 113, 0.18), transparent 55%),
+                  rgba(15, 23, 42, 0.98);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .alert-item span.meta {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .section {
+      margin-bottom: 26px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .section-header h2 {
+      font-size: 15px;
+      margin: 0;
+    }
+    .section-header p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .chip-premium {
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: radial-gradient(circle at top, rgba(253, 224, 71, 0.24), transparent 55%),
+                  rgba(24, 20, 3, 0.95);
+      border: 1px solid rgba(250, 204, 21, 0.8);
+      color: #fef9c3;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .plan-card {
+      background: radial-gradient(circle at top left, rgba(251, 191, 36, 0.1), transparent 60%),
+                  rgba(15, 23, 42, 0.98);
+      border-radius: var(--radius);
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      padding: 14px 14px 13px;
+    }
+
+    .plan-card h3 {
+      margin: 0 0 4px;
+      font-size: 15px;
+    }
+    .plan-price {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 6px 0;
+    }
+    .plan-price span {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .plan-list {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .plan-list li::before {
+      content: '• ';
+      color: var(--accent);
+    }
+
+    .btn-primary {
+      margin-top: 10px;
+      border-radius: 999px;
+      border: none;
+      padding: 7px 13px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: linear-gradient(120deg, #22c55e, #3b82f6);
+      color: #020617;
+      box-shadow: 0 12px 30px rgba(34, 197, 94, 0.4);
+    }
+
+    .hidden { display: none; }
+
+    footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      padding-top: 8px;
+      border-top: 1px solid rgba(15,23,42,0.8);
+    }
+
+    .loading-overlay {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .loading-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.2; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1.1); }
+    }
+
+    @media (max-width: 960px) {
+      body { flex-direction: column; }
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 16px;
+        overflow-x: auto;
+      }
+      .sidebar-footer { display: none; }
+      .nav { flex-direction: row; flex-wrap: nowrap; }
+      .main { padding: 18px 16px 28px; }
+      .grid { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">CS</div>
+      <div>
+        <div class="logo-text-title">CryptoScout</div>
+        <div class="logo-text-sub">Memecoins • Tendências • Alertas</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="nav-title">Navegação</div>
+      <div class="nav" id="navButtons">
+        <button data-target="view-dashboard" class="active"><span class="icon">📊</span>Dashboard</button>
+        <button data-target="view-launches"><span class="icon">🚀</span>Lançamentos</button>
+        <button data-target="view-alerts"><span class="icon">⚠️</span>Alertas</button>
+        <button data-target="view-news"><span class="icon">📰</span>Notícias</button>
+        <button data-target="view-market"><span class="icon">🌐</span>Mercado</button>
+        <button data-target="view-premium"><span class="icon">⭐</span>Premium</button>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div>Atualização a cada <strong id="refreshSeconds">30s</strong>.</div>
+      <div>Última leitura: <span id="lastUpdated">carregando…</span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="main-header">
+      <div class="main-header-left">
+        <h1>Dashboard em Tempo Real</h1>
+        <p>Monitor de memecoins, lançamentos, notícias e alertas calculados em tempo real. Não é recomendação de investimento.</p>
+      </div>
+      <div class="main-header-right">
+        <div class="pill">
+          <span class="badge-live-dot"></span>
+          Live • Dados atualizados automaticamente
+        </div>
+      </div>
+    </header>
+
+    <!-- GRÁFICO TRADINGVIEW -->
+    <div class="card" style="margin-bottom:8px; padding:20px;">
+      <div class="card-header" style="margin-bottom:6px;">
+        <div>
+          <div class="card-title">Gráfico (exemplo) – Candle de Memecoin</div>
+          <div class="card-sub">Mock de velas apenas para visualização. Em produção, conecte um par real via API.</div>
+        </div>
+      </div>
+      <div id="tvchart" style="width:100%; height:300px;"></div>
+    </div>
+
+    <!-- VIEW: DASHBOARD -->
+    <section id="view-dashboard" class="view">
+      <div class="grid">
+        <!-- Card: Painel de Tokens -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Painel de Memecoins Monitoradas</div>
+              <div class="card-sub">Scores de tendência, segurança e lançamento calculados em tempo real.</div>
+            </div>
+            <div class="badge-live">
+              <span class="badge-live-dot"></span>
+              <span id="tableStatus">Carregando tokens…</span>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Moeda</th>
+                  <th>Rede / DEX</th>
+                  <th>Preço</th>
+                  <th>Volume 24h</th>
+                  <th>Variação</th>
+                  <th>Tend.</th>
+                  <th>Seg.</th>
+                  <th>Lanç.</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tokensTableBody">
+                <tr id="tokensLoadingRow">
+                  <td colspan="9">
+                    <div class="loading-overlay">
+                      <span class="loading-dot"></span>
+                      <span>Buscando dados iniciais…</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Card: Notícias e Alertas rápidos -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Feed Rápido</div>
+              <div class="card-sub">Notícias e alertas recentes relacionados a memecoins e lançamentos.</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-header">
+              <h2>Notícias</h2>
+              <p>Fonte configurável via API (CryptoPanic, NewsAPI, etc.).</p>
+            </div>
+            <div class="news-list" id="newsList">
+              <div class="loading-overlay">
+                <span class="loading-dot"></span>
+                <span>Carregando notícias…</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-header">
+              <h2>Alertas Rápidos</h2>
+              <p>Gatilhos de pump, dump, risco e hype forte.</p>
+            </div>
+            <div class="alert-list" id="quickAlerts">
+              <div class="loading-overlay">
+                <span class="loading-dot"></span>
+                <span>Aguardando primeiros alertas…</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção extra dashboard: visão geral -->
+      <div class="section">
+        <div class="card">
+          <div class="section-header">
+            <h2>Resumo Diário do CryptoScout</h2>
+            <p>Panorama geral do mercado com base nos tokens monitorados.</p>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:12px; font-size:13px;">
+            <div class="tag" id="summaryHotCount">HOT: 0 tokens com tendência forte</div>
+            <div class="tag" id="summaryRiskCount">Risco: 0 tokens com segurança baixa</div>
+            <div class="tag" id="summaryNewCount">Novos: 0 lançamentos recentes</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: LANÇAMENTOS -->
+    <section id="view-launches" class="view hidden">
+      <div class="section">
+        <div class="card">
+          <div class="section-header">
+            <h2>Lançamentos em Destaque</h2>
+            <p>Tokens novos com alto potencial de hype. Dados em tempo quase real.</p>
+          </div>
+          <div id="launchesList" class="news-list">
+            <!-- preenchido via JS filtrando tokens "new" / "launch" -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: ALERTAS -->
+    <section id="view-alerts" class="view hidden">
+      <div class="section">
+        <div class="card">
+          <div class="section-header">
+            <h2>Alertas do CryptoScout</h2>
+            <p>Histórico de alertas gerados a partir dos gatilhos configurados.</p>
+          </div>
+          <div class="alert-list" id="alertsList">
+            <!-- alertas detalhados via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: NOTÍCIAS -->
+    <section id="view-news" class="view hidden">
+      <div class="section">
+        <div class="card">
+          <div class="section-header">
+            <h2>Notícias de Mercado</h2>
+            <p>Coletadas de fontes configuradas via API (ex.: CryptoPanic). Você pode customizar palavras-chave de memecoins.</p>
+          </div>
+          <div class="news-list" id="newsFullList">
+            <!-- Notícias mais completas -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: MERCADO -->
+    <section id="view-market" class="view hidden">
+      <div class="section">
+        <div class="card">
+          <div class="section-header">
+            <h2>Visão Geral de Mercado</h2>
+            <p>Resumo calculado com base nos dados carregados: tendências, volumes, redes mais ativas.</p>
+          </div>
+          <div id="marketOverview" style="font-size:13px; color:var(--muted);">
+            <!-- detalhes via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: PREMIUM -->
+    <section id="view-premium" class="view hidden">
+      <div class="section">
+        <div class="card">
+          <div class="section-header">
+            <h2>CryptoScout Premium</h2>
+            <p>Camada paga com alertas avançados, filtros personalizados e integrações de carteira.</p>
+          </div>
+
+          <div class="plans">
+            <div class="plan-card">
+              <h3>Free</h3>
+              <p class="card-sub">Ideal para acompanhar o básico do mercado de memecoins.</p>
+              <p class="plan-price">R$ 0<span>/mês</span></p>
+              <ul class="plan-list">
+                <li>Painel de memecoins monitoradas</li>
+                <li>Resumo diário de mercado</li>
+                <li>Algumas notícias públicas</li>
+              </ul>
+            </div>
+
+            <div class="plan-card">
+              <h3>Pro</h3>
+              <p class="card-sub">Para quem quer operar com informação mais filtrada e alertas em tempo real.</p>
+              <p class="plan-price">R$ 97<span>/mês</span></p>
+              <ul class="plan-list">
+                <li>Alertas de pump, dump e risco</li>
+                <li>Scores detalhados com histórico</li>
+                <li>Configuração de palavras-chave e filtros</li>
+                <li>Prioridade nas atualizações</li>
+              </ul>
+              <button class="btn-primary">Quero ser Pro</button>
+            </div>
+
+            <div class="plan-card">
+              <h3>Elite</h3>
+              <div class="chip-premium">Acesso limitado • Foco em estratégia</div>
+              <p class="plan-price">Sob consulta<span> / mensal</span></p>
+              <ul class="plan-list">
+                <li>Alertas personalizados por carteira</li>
+                <li>Monitoramento de tokens específicos</li>
+                <li>Curadoria manual + IA</li>
+                <li>Suporte individual (Discord/Telegram)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      CryptoScout © 2025 – Ferramenta experimental de monitoramento de memecoins. Não é recomendação de investimento.
+    </footer>
+  </main>
+
+  <!-- Biblioteca de gráficos TradingView Lightweight Charts -->
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
+  <script>
+    // =============================
+    // CONFIGURAÇÃO BÁSICA
+    // =============================
+
+    const REFRESH_INTERVAL_MS = 30000; // 30s
+
+    // Lista de tokens monitorados (exemplo). Você pode trocar pelos que quiser
+    // usando endereços reais de tokens em DexScreener, etc.
+    const trackedTokens = [
+      {
+        id: 'pepe_eth',
+        symbol: 'PEPE',
+        name: 'Pepe',
+        chain: 'ethereum',
+        dex: 'Uniswap',
+        // Exemplo: par no DexScreener (substitua por um par real quando for usar em produção).
+        pairUrl: 'https://api.dexscreener.com/latest/dex/pairs/ethereum/0x0000000000000000000000000000000000000000',
+        isMeme: true
+      },
+      {
+        id: 'bonk_sol',
+        symbol: 'BONK',
+        name: 'Bonk',
+        chain: 'solana',
+        dex: 'Raydium',
+        pairUrl: 'https://api.dexscreener.com/latest/dex/pairs/solana/0x0000000000000000000000000000000000000000',
+        isMeme: true
+      },
+      {
+        id: 'newmoon_sol',
+        symbol: 'NEWMOON',
+        name: 'NewMoon',
+        chain: 'solana',
+        dex: 'Raydium',
+        pairUrl: 'https://api.dexscreener.com/latest/dex/pairs/solana/0x0000000000000000000000000000000000000000',
+        isMeme: true,
+        isNewLaunch: true
+      }
+    ];
+
+    // Mock de dados locais para fallback quando a API não responder.
+    const fallbackTokenData = {
+      pepe_eth: {
+        price: 0.000021,
+        priceChange24h: 18.5,
+        volume24h: 1450000,
+        liquidityUsd: 520000,
+        fdv: 25000000,
+        ageHours: 36,
+        safetyFlags: { contractVerified: true, lpLocked: true, holdersConcentrated: false }
+      },
+      bonk_sol: {
+        price: 0.0000012,
+        priceChange24h: -4.2,
+        volume24h: 820000,
+        liquidityUsd: 190000,
+        fdv: 18000000,
+        ageHours: 72,
+        safetyFlags: { contractVerified: true, lpLocked: false, holdersConcentrated: false }
+      },
+      newmoon_sol: {
+        price: 0.0000034,
+        priceChange24h: 63.7,
+        volume24h: 230000,
+        liquidityUsd: 40000,
+        fdv: 1200000,
+        ageHours: 2.7,
+        safetyFlags: { contractVerified: false, lpLocked: false, holdersConcentrated: true }
+      }
+    };
+
+    // Estado em memória
+    let tokenState = {};
+    let alertsHistory = [];
+
+    // =============================
+    // UTILITÁRIOS
+    // =============================
+    function formatMoneyUSD(num) {
+      if (num === null || num === undefined || isNaN(num)) return '-';
+      if (num >= 1_000_000_000) return '$' + (num / 1_000_000_000).toFixed(2) + 'B';
+      if (num >= 1_000_000) return '$' + (num / 1_000_000).toFixed(2) + 'M';
+      if (num >= 1_000) return '$' + (num / 1_000).toFixed(2) + 'K';
+      return '$' + num.toFixed(2);
+    }
+
+    function classifyScore(score) {
+      if (score >= 70) return 'good';
+      if (score >= 40) return 'mid';
+      return 'bad';
+    }
+
+    function createScorePill(label, score) {
+      const quality = classifyScore(score);
+      const pill = document.createElement('div');
+      pill.className = `score-pill ${quality}`;
+      const spanLabel = document.createElement('span');
+      spanLabel.textContent = label;
+      const spanValue = document.createElement('span');
+      spanValue.className = 'value';
+      spanValue.textContent = score.toFixed(0);
+      const bar = document.createElement('div');
+      bar.className = 'score-bar';
+      const barFill = document.createElement('div');
+      barFill.className = 'score-bar-fill';
+      barFill.style.width = Math.min(100, Math.max(0, score)).toFixed(0) + '%';
+      if (quality === 'good') barFill.style.background = 'linear-gradient(90deg,#22c55e,#4ade80)';
+      if (quality === 'mid') barFill.style.background = 'linear-gradient(90deg,#eab308,#f59e0b)';
+      if (quality === 'bad') barFill.style.background = 'linear-gradient(90deg,#f97373,#fb7185)';
+      bar.appendChild(barFill);
+      pill.appendChild(spanLabel);
+      pill.appendChild(bar);
+      pill.appendChild(spanValue);
+      return pill;
+    }
+
+    function nowFormatted() {
+      const d = new Date();
+      return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    // =============================
+    // LÓGICA DE SCORES (SIMPLIFICADA)
+    // =============================
+
+    function computeScores(raw) {
+      const priceChange24h = raw?.priceChange24h ?? 0; // em %
+      const volume24h = raw?.volume24h ?? 0;
+      const liquidityUsd = raw?.liquidityUsd ?? 0;
+      const ageHours = raw?.ageHours ?? 24;
+      const safetyFlags = raw?.safetyFlags ?? {};
+
+      let trend = 50 + (priceChange24h * 0.9);
+      if (volume24h > 1_000_000) trend += 10;
+      if (volume24h > 10_000_000) trend += 10;
+      trend = Math.max(0, Math.min(100, trend));
+
+      let safety = 50;
+      if (safetyFlags.contractVerified) safety += 10;
+      if (safetyFlags.lpLocked) safety += 15;
+      if (liquidityUsd > 200_000) safety += 10;
+      if (liquidityUsd > 1_000_000) safety += 10;
+      if (safetyFlags.holdersConcentrated) safety -= 20;
+      if (ageHours < 8) safety -= 15;
+      safety = Math.max(0, Math.min(100, safety));
+
+      let launch = 30;
+      if (ageHours < 3) launch += 30;
+      if (ageHours < 1) launch += 15;
+      if (volume24h > 200_000) launch += 10;
+      if (volume24h > 1_000_000) launch += 10;
+      if (priceChange24h > 50) launch += 10;
+      launch = Math.max(0, Math.min(100, launch));
+
+      return { trend, safety, launch };
+    }
+
+    // =============================
+    // SELF TEST (TESTE RÁPIDO)
+    // =============================
+    function runSelfTests() {
+      const raw = {
+        priceChange24h: 10,
+        volume24h: 500000,
+        liquidityUsd: 100000,
+        ageHours: 12,
+        safetyFlags: { contractVerified: true, lpLocked: false, holdersConcentrated: false }
+      };
+      const s = computeScores(raw);
+      if (!s || typeof s.trend !== 'number' || typeof s.safety !== 'number' || typeof s.launch !== 'number') {
+        console.error('Self-test: computeScores retornou estrutura inválida');
+      } else {
+        console.log('Self-test computeScores OK:', s);
+      }
+    }
+
+    // =============================
+    // ALERTAS (GATILHOS)
+    // =============================
+
+    function evaluateAlerts(tokenId, tokenLabel, scores, raw) {
+      const alerts = [];
+      const priceChange24h = raw?.priceChange24h ?? 0;
+      const volume24h = raw?.volume24h ?? 0;
+      const liquidityUsd = raw?.liquidityUsd ?? 0;
+
+      if (scores.trend >= 85 && volume24h > 200_000) {
+        alerts.push({
+          type: 'PUMP',
+          message: `${tokenLabel} com forte tendência de alta (Score Tendência ${scores.trend.toFixed(0)})`,
+          severity: 'high'
+        });
+      }
+
+      if (scores.safety <= 30) {
+        alerts.push({
+          type: 'RISCO',
+          message: `${tokenLabel} com segurança baixa (Score Segurança ${scores.safety.toFixed(0)})`,
+          severity: 'high'
+        });
+      }
+
+      if (priceChange24h <= -25) {
+        alerts.push({
+          type: 'DUMP',
+          message: `${tokenLabel} em forte queda (${priceChange24h.toFixed(1)}% em 24h)`,
+          severity: 'medium'
+        });
+      }
+
+      if (liquidityUsd < 30_000 && volume24h > 100_000) {
+        alerts.push({
+          type: 'LIQ',
+          message: `${tokenLabel} com liquidez baixa para o volume atual`,
+          severity: 'medium'
+        });
+      }
+
+      if (scores.launch >= 80 && raw?.ageHours < 6) {
+        alerts.push({
+          type: 'LAUNCH',
+          message: `${tokenLabel} lançamento quente (Score Lançamento ${scores.launch.toFixed(0)})`,
+          severity: 'high'
+        });
+      }
+
+      if (alerts.length) {
+        alerts.forEach(a => {
+          alertsHistory.unshift({
+            id: `${tokenId}_${Date.now()}_${a.type}`,
+            tokenId,
+            tokenLabel,
+            ...a,
+            timestamp: new Date()
+          });
+        });
+        renderAlerts();
+        renderQuickAlerts();
+      }
+    }
+
+    // =============================
+    // NOTÍCIAS (MOCK + ESTRUTURA PARA API)
+    // =============================
+
+    let newsCache = [];
+
+    async function fetchNewsMock() {
+      newsCache = [
+        {
+          id: 'n1',
+          title: 'Solana domina novos lançamentos de memecoins nas últimas 24h',
+          source: 'CryptoScout Feed',
+          ageMinutes: 18,
+          tags: ['SOL', 'MEME']
+        },
+        {
+          id: 'n2',
+          title: 'Token PEPE volta a subir com aumento de volume em DEXs',
+          source: 'Market Watch',
+          ageMinutes: 47,
+          tags: ['ETH', 'PEPE']
+        },
+        {
+          id: 'n3',
+          title: 'Novo launchpad em Base ganha tração com memecoins experimentais',
+          source: 'DeFi Radar',
+          ageMinutes: 90,
+          tags: ['BASE', 'LAUNCHPAD']
+        }
+      ];
+      renderNews();
+    }
+
+    function renderNews() {
+      const newsList = document.getElementById('newsList');
+      const newsFullList = document.getElementById('newsFullList');
+      newsList.innerHTML = '';
+      newsFullList.innerHTML = '';
+      newsCache.forEach((n, i) => {
+        const item = document.createElement('div');
+        item.className = 'news-item';
+        const title = document.createElement('div');
+        title.className = 'news-item-title';
+        title.textContent = (i === 0 ? '🔥 ' : '') + n.title;
+        const meta = document.createElement('div');
+        meta.className = 'news-item-meta';
+        const left = document.createElement('span');
+        left.textContent = `${n.source} • ${n.ageMinutes} min atrás`;
+        const right = document.createElement('span');
+        right.textContent = n.tags.join(' • ');
+        meta.appendChild(left);
+        meta.appendChild(right);
+        item.appendChild(title);
+        item.appendChild(meta);
+        if (i < 3) newsList.appendChild(item.cloneNode(true));
+        newsFullList.appendChild(item);
+      });
+    }
+
+    // =============================
+    // RENDERIZAÇÃO DE TOKENS
+    // =============================
+
+    function renderTokens() {
+      const tbody = document.getElementById('tokensTableBody');
+      const loadingRow = document.getElementById('tokensLoadingRow');
+      const tableStatus = document.getElementById('tableStatus');
+      if (loadingRow) loadingRow.remove();
+
+      tbody.innerHTML = '';
+
+      let hotCount = 0;
+      let riskCount = 0;
+      let newCount = 0;
+
+      trackedTokens.forEach(t => {
+        const state = tokenState[t.id];
+        const tr = document.createElement('tr');
+
+        const tdName = document.createElement('td');
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'token-name';
+        nameDiv.textContent = t.symbol;
+        const subDiv = document.createElement('div');
+        subDiv.className = 'token-chain';
+        subDiv.textContent = t.name;
+        tdName.appendChild(nameDiv);
+        tdName.appendChild(subDiv);
+
+        const tdChain = document.createElement('td');
+        const chip = document.createElement('span');
+        chip.className = 'chip-chain';
+        chip.textContent = `${t.chain.toUpperCase()} • ${t.dex}`;
+        tdChain.appendChild(chip);
+
+        const tdPrice = document.createElement('td');
+        tdPrice.textContent = state?.price != null ? '$' + state.price.toFixed(6) : '-';
+
+        const tdVol = document.createElement('td');
+        tdVol.textContent = state ? formatMoneyUSD(state.volume24h) : '-';
+
+        const tdChange = document.createElement('td');
+        if (state && state.priceChange24h != null) {
+          const span = document.createElement('span');
+          span.textContent = state.priceChange24h.toFixed(2) + '%';
+          span.className = state.priceChange24h >= 0 ? 'change-pos' : 'change-neg';
+          tdChange.appendChild(span);
+        } else {
+          tdChange.textContent = '-';
+        }
+
+        const tdTrend = document.createElement('td');
+        const tdSafety = document.createElement('td');
+        const tdLaunch = document.createElement('td');
+
+        if (state && state.scores) {
+          tdTrend.appendChild(createScorePill('T', state.scores.trend));
+          tdSafety.appendChild(createScorePill('S', state.scores.safety));
+          tdLaunch.appendChild(createScorePill('L', state.scores.launch));
+
+          if (state.scores.trend >= 80) hotCount++;
+          if (state.scores.safety <= 30) riskCount++;
+          if (state.scores.launch >= 75 && state.ageHours < 48) newCount++;
+        } else {
+          tdTrend.textContent = '-';
+          tdSafety.textContent = '-';
+          tdLaunch.textContent = '-';
+        }
+
+        const tdStatus = document.createElement('td');
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'status-launch';
+        let statusLabel = 'Observando';
+        if (state?.ageHours != null) {
+          if (state.ageHours < 3) {
+            statusSpan.classList.add('hot');
+            statusLabel = '🔥 Lançada há pouco';
+          } else if (state.ageHours < 24) {
+            statusSpan.classList.add('new');
+            statusLabel = 'Novo (menos de 24h)';
+          } else {
+            statusLabel = 'Ativa';
+          }
+        }
+        statusSpan.textContent = statusLabel;
+        tdStatus.appendChild(statusSpan);
+
+        tr.appendChild(tdName);
+        tr.appendChild(tdChain);
+        tr.appendChild(tdPrice);
+        tr.appendChild(tdVol);
+        tr.appendChild(tdChange);
+        tr.appendChild(tdTrend);
+        tr.appendChild(tdSafety);
+        tr.appendChild(tdLaunch);
+        tr.appendChild(tdStatus);
+
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('summaryHotCount').textContent = `HOT: ${hotCount} tokens com tendência forte`;
+      document.getElementById('summaryRiskCount').textContent = `Risco: ${riskCount} tokens com segurança baixa`;
+      document.getElementById('summaryNewCount').textContent = `Novos: ${newCount} lançamentos recentes`;
+
+      if (tableStatus) tableStatus.textContent = 'Atualizado';
+
+      renderLaunchesView();
+      renderMarketOverview();
+    }
+
+    function renderLaunchesView() {
+      const container = document.getElementById('launchesList');
+      container.innerHTML = '';
+      trackedTokens.forEach(t => {
+        const state = tokenState[t.id];
+        if (!state || state.ageHours == null) return;
+        if (state.ageHours > 72) return;
+
+        const card = document.createElement('div');
+        card.className = 'news-item';
+        const title = document.createElement('div');
+        title.className = 'news-item-title';
+        title.textContent = `🚀 ${t.symbol} • ${t.chain.toUpperCase()} / ${t.dex}`;
+        const meta = document.createElement('div');
+        meta.className = 'news-item-meta';
+        const left = document.createElement('span');
+        left.textContent = `Idade: ~${state.ageHours.toFixed(1)}h • Volume 24h: ${formatMoneyUSD(state.volume24h)}`;
+        const right = document.createElement('span');
+        right.textContent = `Score Lançamento: ${state.scores ? state.scores.launch.toFixed(0) : '-'}`;
+        meta.appendChild(left);
+        meta.appendChild(right);
+        card.appendChild(title);
+        card.appendChild(meta);
+        container.appendChild(card);
+      });
+    }
+
+    function renderAlerts() {
+      const container = document.getElementById('alertsList');
+      container.innerHTML = '';
+      alertsHistory.slice(0, 20).forEach(a => {
+        const item = document.createElement('div');
+        item.className = 'alert-item';
+        const left = document.createElement('div');
+        left.textContent = `${a.type} • ${a.message}`;
+        const right = document.createElement('span');
+        right.className = 'meta';
+        right.textContent = a.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        item.appendChild(left);
+        item.appendChild(right);
+        container.appendChild(item);
+      });
+    }
+
+    function renderQuickAlerts() {
+      const container = document.getElementById('quickAlerts');
+      container.innerHTML = '';
+      alertsHistory.slice(0, 5).forEach(a => {
+        const item = document.createElement('div');
+        item.className = 'alert-item';
+        const left = document.createElement('div');
+        left.textContent = `${a.type} • ${a.message}`;
+        const right = document.createElement('span');
+        right.className = 'meta';
+        right.textContent = 'agora';
+        item.appendChild(left);
+        item.appendChild(right);
+        container.appendChild(item);
+      });
+    }
+
+    function renderMarketOverview() {
+      const el = document.getElementById('marketOverview');
+      let totalVolume = 0;
+      const byChain = {};
+      trackedTokens.forEach(t => {
+        const state = tokenState[t.id];
+        if (!state) return;
+        totalVolume += state.volume24h || 0;
+        const key = t.chain.toUpperCase();
+        byChain[key] = (byChain[key] || 0) + (state.volume24h || 0);
+      });
+      const chainsSummary = Object.entries(byChain)
+        .sort((a, b) => b[1] - a[1])
+        .map(([chain, vol]) => `${chain}: ${formatMone
