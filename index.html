@@ -1287,3 +1287,68 @@
       const chainsSummary = Object.entries(byChain)
         .sort((a, b) => b[1] - a[1])
         .map(([chain, vol]) => `${chain}: ${formatMone
+        .map(([chain, vol]) => `${chain}: ${formatMoneyUSD(vol)}`)
+        .join(" • ");
+
+      el.innerHTML = `
+        <p><strong>Volume total monitorado:</strong> ${formatMoneyUSD(totalVolume)}</p>
+        <p><strong>Maior atividade por rede:</strong> ${chainsSummary}</p>
+      `;
+    }
+
+    async function loadTokens() {
+      for (const t of trackedTokens) {
+        let raw = null;
+        try {
+          const res = await fetch(t.pairUrl);
+          if (res.ok) raw = (await res.json())?.pair || null;
+        } catch (e) {}
+        if (!raw) raw = fallbackTokenData[t.id];
+        const scores = computeScores(raw);
+        tokenState[t.id] = { ...raw, scores, ageHours: raw.ageHours ?? 24 };
+        evaluateAlerts(t.id, t.symbol, scores, raw);
+      }
+      renderTokens();
+      document.getElementById('lastUpdated').textContent = nowFormatted();
+    }
+
+    document.querySelectorAll('#navButtons button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#navButtons button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const target = btn.dataset.target;
+        document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+        document.getElementById(target).classList.remove('hidden');
+      });
+    });
+
+    function initChart() {
+      const chart = LightweightCharts.createChart(document.getElementById('tvchart'), {
+        width: document.getElementById('tvchart').clientWidth,
+        height: 300,
+        layout: { background: { type:'solid', color:'#0b0f16' }, textColor:'#d1d4dc' },
+        grid: { vertLines:{ color:'#1c1f26' }, horzLines:{ color:'#1c1f26' } }
+      });
+
+      const candleSeries = chart.addCandlestickSeries({
+        upColor:'#4be278', borderUpColor:'#4be278', wickUpColor:'#4be278',
+        downColor:'#ff5c5c', borderDownColor:'#ff5c5c', wickDownColor:'#ff5c5c'
+      });
+
+      candleSeries.setData([
+        { time:'2024-01-01', open:0.1, high:0.12, low:0.09, close:0.11 },
+        { time:'2024-01-02', open:0.11, high:0.13, low:0.10, close:0.12 },
+        { time:'2024-01-03', open:0.12, high:0.14, low:0.11, close:0.13 },
+        { time:'2024-01-04', open:0.13, high:0.16, low:0.12, close:0.15 },
+        { time:'2024-01-05', open:0.15, high:0.17, low:0.14, close:0.16 }
+      ]);
+    }
+
+    runSelfTests();
+    loadTokens();
+    fetchNewsMock();
+    initChart();
+    setInterval(loadTokens, REFRESH_INTERVAL_MS);
+  </script>
+</body>
+</html>
